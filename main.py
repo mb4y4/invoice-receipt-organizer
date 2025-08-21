@@ -39,23 +39,41 @@ def extract_invoice_data(file_path):
         print(f"Error reading {file_path}: {e}")
         return "Unknown", "0", "", datetime.now().strftime("%Y-%m-%d")
 
+import time
+
 def process_invoice(file_path):
     """Process a single invoice and move it to organized folder."""
+    # Wait until file is fully available
+    for i in range(5):
+        if os.path.exists(file_path):
+            break
+        time.sleep(1)  # wait 1 second before retry
+    else:
+        print(f"File not found after waiting: {file_path}")
+        return
+
     vendor, amount, currency, date = extract_invoice_data(file_path)
 
-    # Format new filename
-    filename = f"{vendor}_{amount}{currency}_{date}.pdf".replace(" ", "_")
+    # Sanitize filename (replace slashes so Windows doesn’t break)
+    safe_date = date.replace("/", "-")
+    filename = f"{vendor}_{amount}{currency}_{safe_date}.pdf".replace(" ", "_")
     new_path = os.path.join(ORG_DIR, filename)
 
-    shutil.move(file_path, new_path)
+    try:
+        shutil.move(file_path, new_path)
+    except Exception as e:
+        print(f"Error moving file {file_path} -> {new_path}: {e}")
+        return
 
     # Save record to CSV
-    df = pd.DataFrame([[vendor, amount, currency, date, filename]],
+    df = pd.DataFrame([[vendor, amount, currency, safe_date, filename]],
                       columns=["Vendor", "Amount", "Currency", "Date", "File"])
     if os.path.exists(CSV_FILE):
         df.to_csv(CSV_FILE, mode="a", header=False, index=False)
     else:
         df.to_csv(CSV_FILE, index=False)
+
+    print(f"Processed: {filename}")
 
 
 class InvoiceHandler(FileSystemEventHandler):
