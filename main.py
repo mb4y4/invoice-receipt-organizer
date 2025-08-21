@@ -57,7 +57,6 @@ def process_invoice(file_path):
     else:
         df.to_csv(CSV_FILE, index=False)
 
-    print(f"Processed: {filename}")
 
 class InvoiceHandler(FileSystemEventHandler):
     """Watchdog event handler for new invoices."""
