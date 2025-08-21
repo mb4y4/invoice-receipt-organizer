@@ -22,6 +22,6 @@ This project automates organising invoices and receipts:
    ```bash
    python main.py
    
-4. Drop any PDF invoices into the invoices/ folder.
-They will be renamed, moved to organized/, and logged in expenses.csv.
+4. Drop any PDF invoices into the `invoices/` folder.
+They will be renamed, moved to `organized/`, and logged in `expenses.csv`
 
